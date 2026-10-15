@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project 67 — Burger Bonk</title>
+<style>
+:root{color-scheme:dark;--sky:#91d8ff;--ink:#18243b}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:linear-gradient(#72c9ff,#d7f4ff 75%,#79c85a 75%);color:var(--ink);min-height:100vh;display:grid;place-items:center}
+.wrap{width:min(960px,100%);padding:16px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+h1{margin:0;font-size:clamp(22px,4vw,36px);text-shadow:0 2px #fff}.hud{background:#ffffffd9;padding:8px 14px;border-radius:12px;font-weight:800}
+.stage{position:relative;height:min(64vh,520px);min-height:340px;overflow:hidden;border:5px solid white;border-radius:18px;background:linear-gradient(#8cddff 0%,#d8f5ff 78%,#62b84d 78%,#39933b 100%);box-shadow:0 12px 30px #24425b45;touch-action:pan-y}
+.cloud{position:absolute;color:#fff;font-size:52px;opacity:.75;user-select:none}.c1{top:10%;left:12%}.c2{top:22%;right:12%}
+.ground{position:absolute;bottom:20%;left:0;right:0;height:10px;background:#398b34}
+#player{position:absolute;bottom:calc(20% - 1px);left:calc(50% - 48px);width:96px;height:126px;object-fit:contain;object-position:bottom;z-index:3;filter:drop-shadow(0 5px 2px #0002);user-select:none;-webkit-user-drag:none}
+#burger{position:absolute;width:64px;height:64px;object-fit:contain;top:-80px;left:30%;z-index:4;filter:drop-shadow(0 5px 3px #0003);user-select:none;pointer-events:none}
+#bonk{position:absolute;display:none;z-index:5;font-weight:1000;font-size:30px;transform:rotate(-12deg);text-shadow:2px 2px white;pointer-events:none}
+.overlay{position:absolute;inset:0;display:grid;place-items:center;background:#14233c8c;color:white;text-align:center;padding:24px;z-index:10}
+.overlay-card{background:#fff;color:#18243b;padding:22px;border-radius:18px;max-width:380px;box-shadow:0 8px 25px #0003}
+button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px 20px;font-weight:900;font-size:16px;cursor:pointer}button:focus-visible{outline:3px solid #18243b;outline-offset:3px}.help{text-align:center;font-weight:700;margin:10px 0 0}.mobile{display:flex;justify-content:center;gap:20px;margin-top:10px}.mobile button{width:100px;background:#fff}
+@media(min-width:700px){.mobile{display:none}}
+</style>
+</head>
+<body><main class="wrap">
+<div class="top"><h1>🍔 PROJECT 67: BURGER BONK</h1><div class="hud">Hits: <span id="score">0</span> · Misses: <span id="misses">0</span></div></div>
+<div class="stage" id="stage" aria-label="Game area">
+<span class="cloud c1">☁️</span><span class="cloud c2">☁️</span><div class="ground"></div>
+<img id="player" src="character.png" alt="Player character">
+<img id="burger" src="image.png" alt="">
+<div id="bonk">PLOP! 💩</div>
+<div class="overlay" id="overlay"><div class="overlay-card"><h2>Watch your head! 🍔</h2><p>Move left and right. Every burger that bonks your head triggers a silly poop sound.</p><p><small>Use ← → or A / D. On a phone, use the buttons below.</small></p><button id="start">START GAME</button></div></div>
+</div>
+<div class="mobile"><button id="left" aria-label="Move left">⬅ LEFT</button><button id="right" aria-label="Move right">RIGHT ➡</button></div>
+<p class="help">Dodge the falling burgers… if you can. 😈</p>
+</main>
+<script>
+(() => {
+ const stage=document.getElementById('stage'), player=document.getElementById('player'), burger=document.getElementById('burger');
+ const scoreEl=document.getElementById('score'), missesEl=document.getElementById('misses'), overlay=document.getElementById('overlay'), bonk=document.getElementById('bonk');
+ let x=.5, bx=.3, by=-80, speed=190, score=0, misses=0, running=false, last=0, raf=0, lastBonk=0;
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ function placePlayer(){ player.style.left=(x*(stage.clientWidth-player.offsetWidth))+'px'; }
+ function resetBurger(){ bx=Math.random()*.88+.06; by=-burger.offsetHeight-Math.random()*100; speed=190+Math.min(score*7,180); burger.style.left=(bx*(stage.clientWidth-burger.offsetWidth))+'px'; burger.style.top=by+'px'; }
+ function poopSound(){
+   try{
+    const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
+    const c=new C(), t=c.currentTime;
+    const master=c.createGain();master.gain.setValueAtTime(.0001,t);master.gain.exponentialRampToValueAtTime(.22,t+.02);master.gain.exponentialRampToValueAtTime(.0001,t+.65);master.connect(c.destination);
+    const o=c.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(145,t);o.frequency.exponentialRampToValueAtTime(48,t+.16);o.frequency.setValueAtTime(85,t+.22);o.frequency.exponentialRampToValueAtTime(38,t+.48);o.connect(master);o.start(t);o.stop(t+.67);
+    const o2=c.createOscillator(),g=c.createGain();o2.type='triangle';o2.frequency.setValueAtTime(280,t+.03);o2.frequency.exponentialRampToValueAtTime(65,t+.22);g.gain.setValueAtTime(.12,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+.3);o2.connect(g);g.connect(c.destination);o2.start(t+.03);o2.stop(t+.31);o.onended=()=>c.close();
+   }catch(e){}
+ }
+ function frame(now){if(!running)return;const dt=Math.min((now-last)/1000,.04);last=now;by+=speed*dt;burger.style.top=by+'px';
+   const px=x*(stage.clientWidth-player.offsetWidth), py=stage.clientHeight-player.offsetHeight-stage.clientHeight*.20;
+   const hit=by+burger.offsetHeight>=py+14 && by<=py+player.offsetHeight && bx*(stage.clientWidth-burger.offsetWidth)+burger.offsetWidth>px+10 && bx*(stage.clientWidth-burger.offsetWidth)<px+player.offsetWidth-10;
+   if(hit && now-lastBonk>450){score++;scoreEl.textContent=score;lastBonk=now;poopSound();bonk.style.left=(px+player.offsetWidth/2-30)+'px';bonk.style.top=(py-30)+'px';bonk.style.display='block';setTimeout(()=>bonk.style.display='none',500);resetBurger();}
+   else if(by>stage.clientHeight){misses++;missesEl.textContent=misses;resetBurger();}
+   raf=requestAnimationFrame(frame);
+ }
+ function start(){cancelAnimationFrame(raf);score=0;misses=0;scoreEl.textContent='0';missesEl.textContent='0';x=.5;placePlayer();resetBurger();overlay.style.display='none';running=true;last=performance.now();raf=requestAnimationFrame(frame);}
+ function move(d){x=clamp(x+d,0,1);placePlayer();}
+ document.getElementById('start').addEventListener('click',start);
+ window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)){e.preventDefault();move((e.key==='ArrowLeft'||e.key.toLowerCase()==='a')?-.07:.07)}if(e.key===' '&&!running)start()});
+ document.getElementById('left').addEventListener('click',()=>move(-.12));document.getElementById('right').addEventListener('click',()=>move(.12));
+ let touchX=null;stage.addEventListener('pointerdown',e=>{touchX=e.clientX});stage.addEventListener('pointermove',e=>{if(touchX!==null&&e.buttons){const d=e.clientX-touchX;move(d/stage.clientWidth);touchX=e.clientX}});stage.addEventListener('pointerup',()=>touchX=null);stage.addEventListener('pointercancel',()=>touchX=null);
+ window.addEventListener('resize',placePlayer);
+ player.addEventListener('error',()=>{player.alt='Upload the supplied classmate photo as character.png';});
+ burger.addEventListener('error',()=>{burger.alt='Upload the burger picture as image.png';});
+ placePlayer();
+})();
+</script></body></html>

@@ -17,26 +17,28 @@ h1{margin:0;font-size:clamp(22px,4vw,36px);text-shadow:0 2px #fff}.hud{backgroun
 #bonk{position:absolute;display:none;z-index:5;font-weight:1000;font-size:30px;transform:rotate(-12deg);text-shadow:2px 2px white;pointer-events:none}
 .overlay{position:absolute;inset:0;display:grid;place-items:center;background:#14233c8c;color:white;text-align:center;padding:24px;z-index:10}
 .overlay-card{background:#fff;color:#18243b;padding:22px;border-radius:18px;max-width:380px;box-shadow:0 8px 25px #0003}
+#feastBurger{width:120px;height:100px;object-fit:contain;display:block;margin:4px auto 12px;animation:chomp .45s ease-in-out infinite alternate}
+@keyframes chomp{from{transform:rotate(-12deg) scale(.92)}to{transform:rotate(12deg) scale(1.08)}}
 button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px 20px;font-weight:900;font-size:16px;cursor:pointer}button:focus-visible{outline:3px solid #18243b;outline-offset:3px}.help{text-align:center;font-weight:700;margin:10px 0 0}.mobile{display:flex;justify-content:center;gap:20px;margin-top:10px}.mobile button{width:100px;background:#fff}
 @media(min-width:700px){.mobile{display:none}}
 </style>
 </head>
 <body><main class="wrap">
-<div class="top"><h1>🍔 PROJECT 67: BURGER BONK</h1><div class="hud">Hits: <span id="score">0</span> · Misses: <span id="misses">0</span></div></div>
+<div class="top"><h1>🍔 PROJECT 67: BURGER BONK</h1><div class="hud">Burgers: <span id="score">0</span>/5 · Misses: <span id="misses">0</span></div></div>
 <div class="stage" id="stage" aria-label="Game area">
 <span class="cloud c1">☁️</span><span class="cloud c2">☁️</span><div class="ground"></div>
 <img id="player" src="character.png" alt="Player character">
 <img id="burger" src="Image.png" alt="">
 <div id="bonk">PLOP! 💩</div>
-<div class="overlay" id="overlay"><div class="overlay-card"><h2>Watch your head! 🍔</h2><p>Move left and right. Every burger that bonks your head triggers a silly poop sound.</p><p><small>Use ← → or A / D. On a phone, use the buttons below.</small></p><button id="start">START GAME</button></div></div>
+<div class="overlay" id="overlay"><div class="overlay-card" id="overlayCard"><h2>Watch your head! 🍔</h2><p>Move left and right. Catch 5 burgers and your character will stop to eat one!</p><p><small>Use ← → or A / D. On a phone, use the buttons below.</small></p><button id="start">START GAME</button></div></div>
 </div>
 <div class="mobile"><button id="left" aria-label="Move left">⬅ LEFT</button><button id="right" aria-label="Move right">RIGHT ➡</button></div>
-<p class="help">Dodge the falling burgers… if you can. 😈</p>
+<p class="help">Catch 5 burgers to unlock snack time! 😋</p>
 </main>
 <script>
 (() => {
  const stage=document.getElementById('stage'), player=document.getElementById('player'), burger=document.getElementById('burger');
- const scoreEl=document.getElementById('score'), missesEl=document.getElementById('misses'), overlay=document.getElementById('overlay'), bonk=document.getElementById('bonk');
+ const scoreEl=document.getElementById('score'), missesEl=document.getElementById('misses'), overlay=document.getElementById('overlay'), overlayCard=document.getElementById('overlayCard'), bonk=document.getElementById('bonk');
  let x=.5, bx=.3, by=-80, speed=190, score=0, misses=0, running=false, last=0, raf=0, lastBonk=0;
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  function placePlayer(){ player.style.left=(x*(stage.clientWidth-player.offsetWidth))+'px'; }
@@ -50,22 +52,30 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
     const o2=c.createOscillator(),g=c.createGain();o2.type='triangle';o2.frequency.setValueAtTime(280,t+.03);o2.frequency.exponentialRampToValueAtTime(65,t+.22);g.gain.setValueAtTime(.12,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+.3);o2.connect(g);g.connect(c.destination);o2.start(t+.03);o2.stop(t+.31);o.onended=()=>c.close();
    }catch(e){}
  }
+ function startEating(){
+   running=false;cancelAnimationFrame(raf);burger.style.display='none';bonk.style.display='none';
+   overlayCard.innerHTML='<h2>😋 YUM YUM!</h2><p>You collected 5 burgers!</p><p>Your character is eating a burger:</p><img id="feastBurger" src="Image.png" alt="Burger being eaten"><p><strong>BURGER TIME! 🍔</strong></p><button id="start">PLAY AGAIN</button>';
+   overlay.style.display='grid';document.getElementById('start').addEventListener('click',start);
+ }
  function frame(now){if(!running)return;const dt=Math.min((now-last)/1000,.04);last=now;by+=speed*dt;burger.style.top=by+'px';
    const px=x*(stage.clientWidth-player.offsetWidth), py=stage.clientHeight-player.offsetHeight-stage.clientHeight*.20;
-   const hit=by+burger.offsetHeight>=py+14 && by<=py+player.offsetHeight && bx*(stage.clientWidth-burger.offsetWidth)+burger.offsetWidth>px+10 && bx*(stage.clientWidth-burger.offsetWidth)<px+player.offsetWidth-10;
-   if(hit && now-lastBonk>450){score++;scoreEl.textContent=score;lastBonk=now;poopSound();bonk.style.left=(px+player.offsetWidth/2-30)+'px';bonk.style.top=(py-30)+'px';bonk.style.display='block';setTimeout(()=>bonk.style.display='none',500);resetBurger();}
+   const burgerX=bx*(stage.clientWidth-burger.offsetWidth);
+   const hit=by+burger.offsetHeight>=py+14 && by<=py+player.offsetHeight && burgerX+burger.offsetWidth>px+10 && burgerX<px+player.offsetWidth-10;
+   if(hit && now-lastBonk>450){score++;scoreEl.textContent=score;lastBonk=now;poopSound();bonk.style.left=(px+player.offsetWidth/2-30)+'px';bonk.style.top=(py-30)+'px';bonk.style.display='block';setTimeout(()=>bonk.style.display='none',500);
+     if(score>=5){startEating();return;}resetBurger();
+   }
    else if(by>stage.clientHeight){misses++;missesEl.textContent=misses;resetBurger();}
    raf=requestAnimationFrame(frame);
  }
- function start(){cancelAnimationFrame(raf);score=0;misses=0;scoreEl.textContent='0';missesEl.textContent='0';x=.5;placePlayer();resetBurger();overlay.style.display='none';running=true;last=performance.now();raf=requestAnimationFrame(frame);}
- function move(d){x=clamp(x+d,0,1);placePlayer();}
+ function start(){cancelAnimationFrame(raf);score=0;misses=0;scoreEl.textContent='0';missesEl.textContent='0';x=.5;placePlayer();burger.style.display='block';overlayCard.innerHTML='<h2>Watch your head! 🍔</h2><p>Move left and right. Catch 5 burgers and your character will stop to eat one!</p><p><small>Use ← → or A / D. On a phone, use the buttons below.</small></p><button id="start">START GAME</button>';document.getElementById('start').addEventListener('click',start);overlay.style.display='none';resetBurger();running=true;last=performance.now();raf=requestAnimationFrame(frame);}
+ function move(d){if(!running)return;x=clamp(x+d,0,1);placePlayer();}
  document.getElementById('start').addEventListener('click',start);
- window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)){e.preventDefault();move((e.key==='ArrowLeft'||e.key.toLowerCase()==='a')?-.07:.07)}if(e.key===' '&&!running)start()});
+ window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)){e.preventDefault();move((e.key==='ArrowLeft'||e.key.toLowerCase()==='a')?-.07:.07)}if(e.key===' '&&!running&&overlay.style.display==='none')start()});
  document.getElementById('left').addEventListener('click',()=>move(-.12));document.getElementById('right').addEventListener('click',()=>move(.12));
- let touchX=null;stage.addEventListener('pointerdown',e=>{touchX=e.clientX});stage.addEventListener('pointermove',e=>{if(touchX!==null&&e.buttons){const d=e.clientX-touchX;move(d/stage.clientWidth);touchX=e.clientX}});stage.addEventListener('pointerup',()=>touchX=null);stage.addEventListener('pointercancel',()=>touchX=null);
+ let touchX=null;stage.addEventListener('pointerdown',e=>{touchX=e.clientX});stage.addEventListener('pointermove',e=>{if(touchX!==null&&e.buttons&&running){const d=e.clientX-touchX;move(d/stage.clientWidth);touchX=e.clientX}});stage.addEventListener('pointerup',()=>touchX=null);stage.addEventListener('pointercancel',()=>touchX=null);
  window.addEventListener('resize',placePlayer);
  player.addEventListener('error',()=>{player.alt='Upload the supplied classmate photo as character.png';});
- burger.addEventListener('error',()=>{burger.alt='Upload the burger picture as image.png';});
+ burger.addEventListener('error',()=>{burger.alt='Upload the burger picture as Image.png';});
  placePlayer();
 })();
 </script></body></html>

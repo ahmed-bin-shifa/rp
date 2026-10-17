@@ -17,12 +17,11 @@ h1{margin:0;font-size:clamp(22px,4vw,36px);text-shadow:0 2px #fff}.hud{backgroun
 #bonk{position:absolute;display:none;z-index:5;font-weight:1000;font-size:30px;transform:rotate(-12deg);text-shadow:2px 2px white;pointer-events:none}
 .overlay{position:absolute;inset:0;display:grid;place-items:center;background:#14233c8c;color:white;text-align:center;padding:24px;z-index:10}
 .overlay-card{background:#fff;color:#18243b;padding:22px;border-radius:18px;max-width:380px;box-shadow:0 8px 25px #0003}
-#feastScene{position:relative;width:280px;height:210px;margin:8px auto 12px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}#feastCharacter{height:190px;max-width:190px;object-fit:contain;object-position:bottom;filter:drop-shadow(0 4px 3px #0002);animation:chewBody .42s ease-in-out infinite alternate}#feastMouth{position:absolute;left:calc(50% + 1px);bottom:119px;width:13px;height:4px;border-radius:50%;background:#321c1c;z-index:2;transform-origin:center;animation:mouthOpen .42s steps(2,end) infinite}#feastBurger{position:absolute;width:100px;height:90px;object-fit:contain;left:calc(50% + 12px);bottom:42px;mix-blend-mode:multiply;filter:drop-shadow(0 3px 2px #0003);animation:chomp .45s ease-in-out infinite alternate;clip-path:inset(0 0 0 0 round 8px);}
-#feastBurger.biting{animation:chomp .45s ease-in-out infinite alternate,biteAway 3s steps(1,end) forwards}
+#feastScene{position:relative;width:280px;height:210px;margin:8px auto 12px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}#feastCharacter{height:190px;max-width:190px;object-fit:contain;object-position:bottom;filter:drop-shadow(0 4px 3px #0002);animation:chewBody .42s ease-in-out infinite alternate}#feastMouth{position:absolute;left:calc(50% + 1px);bottom:119px;width:13px;height:4px;border-radius:50%;background:#321c1c;z-index:2;transform-origin:center;animation:mouthOpen .42s steps(2,end) infinite}#feastBurgerCanvas{position:absolute;width:100px;height:90px;left:calc(50% + 12px);bottom:42px;filter:drop-shadow(0 3px 2px #0003);animation:chomp .45s ease-in-out infinite alternate}
 @keyframes chomp{from{transform:rotate(-12deg) scale(.92)}to{transform:rotate(12deg) scale(1.08)}}
 @keyframes mouthOpen{0%,100%{height:3px;transform:scaleX(.8)}45%,55%{height:15px;transform:scaleX(1.15)}}
 @keyframes chewBody{from{transform:translateY(0) scaleY(1)}to{transform:translateY(2px) scaleY(.985)}}
-@keyframes biteAway{0%{clip-path:inset(0 0 0 0 round 8px);opacity:1}20%{clip-path:inset(0 10% 8% 0 round 8px)}40%{clip-path:inset(0 25% 15% 5% round 8px)}60%{clip-path:inset(8% 38% 22% 10% round 8px)}80%{clip-path:inset(18% 48% 35% 20% round 8px)}100%{clip-path:inset(40% 50% 45% 40% round 8px);opacity:.15}}
+
 button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px 20px;font-weight:900;font-size:16px;cursor:pointer}button:focus-visible{outline:3px solid #18243b;outline-offset:3px}.help{text-align:center;font-weight:700;margin:10px 0 0}.mobile{display:flex;justify-content:center;gap:20px;margin-top:10px}.mobile button{width:100px;background:#fff}
 @media(min-width:700px){.mobile{display:none}}
 </style>
@@ -58,8 +57,40 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
  }
  function startEating(){
    running=false;cancelAnimationFrame(raf);burger.style.display='none';bonk.style.display='none';
-   overlayCard.innerHTML='<h2>😋 YUM YUM!</h2><p>You collected 5 burgers!</p><p>Your character is eating a burger:</p><div id="feastScene"><img id="feastCharacter" src="character.png" alt="Your character"><span id="feastMouth" aria-hidden="true"></span><img id="feastBurger" class="biting" src="Image.png" alt="Burger being eaten"></div><p><strong>BURGER TIME! 🍔</strong></p><button id="start">PLAY AGAIN</button>';
-   overlay.style.display='grid';document.getElementById('start').addEventListener('click',start);
+   overlayCard.innerHTML='<h2>😋 YUM YUM!</h2><p>You collected 5 burgers!</p><p>Your character is chewing a bite...</p><div id="feastScene"><img id="feastCharacter" src="character.png" alt="Your character"><span id="feastMouth" aria-hidden="true"></span><canvas id="feastBurgerCanvas" width="200" height="180" aria-label="Burger being eaten"></canvas></div><p><strong>BACK TO BURGER HUNT IN 3 SECONDS!</strong></p>';
+   overlay.style.display='grid';
+   const canvas=document.getElementById('feastBurgerCanvas'),ctx=canvas.getContext('2d'),img=new Image();
+   img.onload=()=>{
+     canvas.width=img.naturalWidth||200;canvas.height=img.naturalHeight||180;
+     ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+     try{const im=ctx.getImageData(0,0,canvas.width,canvas.height),p=im.data;
+       for(let i=0;i<p.length;i+=4){const r=p[i],g=p[i+1],b=p[i+2];
+         // Turn only near-white background pixels transparent; preserve the colored burger itself.
+         if(r>238&&g>238&&b>238){p[i+3]=0;}
+       }ctx.putImageData(im,0,0);
+     }catch(e){}
+     const startAt=performance.now(),duration=2700;
+     function bite(now){
+       const progress=Math.min(1,(now-startAt)/duration);
+       if(progress>0){
+         ctx.save();ctx.globalCompositeOperation='destination-out';
+         const bites=Math.min(7,Math.floor(progress*8));
+         for(let i=0;i<bites;i++){
+           const bx=canvas.width*(.9-i*.105),by=canvas.height*(.28+(i%3)*.18),rad=Math.max(3,canvas.width*(.055+i*.004));
+           ctx.beginPath();ctx.ellipse(bx,by,rad,rad*.82,-.3,0,Math.PI*2);ctx.fill();
+         }
+         ctx.restore();
+       }
+       if(progress<1)requestAnimationFrame(bite);
+     }
+     requestAnimationFrame(bite);
+   };
+   img.src='Image.png';
+   window.setTimeout(()=>{
+     if(score>=5){score=0;scoreEl.textContent='0';}
+     overlay.style.display='none';burger.style.display='block';resetBurger();
+     running=true;last=performance.now();raf=requestAnimationFrame(frame);
+   },3000);
  }
  function frame(now){if(!running)return;const dt=Math.min((now-last)/1000,.04);last=now;by+=speed*dt;burger.style.top=by+'px';
    const px=x*(stage.clientWidth-player.offsetWidth), py=stage.clientHeight-player.offsetHeight-stage.clientHeight*.20;

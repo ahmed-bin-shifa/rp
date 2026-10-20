@@ -17,7 +17,7 @@ h1{margin:0;font-size:clamp(22px,4vw,36px);text-shadow:0 2px #fff}.hud{backgroun
 #bonk{position:absolute;display:none;z-index:5;font-weight:1000;font-size:30px;transform:rotate(-12deg);text-shadow:2px 2px white;pointer-events:none}
 .overlay{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden;background:#14233c8c;color:white;text-align:center;padding:8px;z-index:10}
 .overlay-card{background:#fff;color:#18243b;padding:clamp(8px,2vh,16px);border-radius:18px;width:100%;max-width:800px;max-height:100%;overflow:hidden;box-shadow:0 8px 25px #0003;margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(2px,1vh,8px)}
-#feastScene{position:relative;width:280px;height:210px;margin:8px auto 12px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}#feastCharacter{height:190px;max-width:190px;object-fit:contain;object-position:bottom;filter:drop-shadow(0 4px 3px #0002);animation:chewBody .42s ease-in-out infinite alternate}#feastMouth{position:absolute;left:calc(50% + 1px);bottom:119px;width:13px;height:4px;border-radius:50%;background:#321c1c;z-index:2;transform-origin:center;animation:mouthOpen .42s steps(2,end) infinite}#feastBurgerCanvas{position:absolute;width:100px;height:90px;left:calc(50% + 12px);bottom:42px;filter:drop-shadow(0 3px 2px #0003);animation:chomp .45s ease-in-out infinite alternate}
+#feastScene{position:relative;width:min(100%,360px);height:220px;margin:8px auto 12px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;flex:0 0 auto}#feastCharacter{height:190px;width:auto;max-width:58%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 4px 3px #0002);animation:chewBody .42s ease-in-out infinite alternate}#feastMouth{position:absolute;left:53%;bottom:112px;width:13px;height:4px;border-radius:50%;background:#321c1c;z-index:2;transform-origin:center;animation:mouthOpen .42s steps(2,end) infinite}#feastBurgerCanvas{position:absolute;width:clamp(64px,27%,100px);height:auto;max-height:90px;object-fit:contain;left:56%;bottom:38px;filter:drop-shadow(0 3px 2px #0003);animation:chomp .45s ease-in-out infinite alternate}
 @keyframes chomp{from{transform:rotate(-12deg) scale(.92)}to{transform:rotate(12deg) scale(1.08)}}
 @keyframes mouthOpen{0%,100%{height:3px;transform:scaleX(.8)}45%,55%{height:15px;transform:scaleX(1.15)}}
 @keyframes chewBody{from{transform:translateY(0) scaleY(1)}to{transform:translateY(2px) scaleY(.985)}}
@@ -107,6 +107,7 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
      }
      requestAnimationFrame(bite);
    };
+   img.onerror=()=>{canvas.style.display='none';};
    img.src=mode==='burger'?'Image.png':'itemch2.png';
    window.setTimeout(()=>{
      if(score>=5){score=0;scoreEl.textContent='0';}

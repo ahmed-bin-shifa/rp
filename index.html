@@ -61,6 +61,16 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
  }
  function startEating(){
    running=false;cancelAnimationFrame(raf);burger.style.display='none';bonk.style.display='none';
+   if(mode==='banana'){
+     overlayCard.innerHTML='<h2>🍌 YUM YUM!</h2><p>You collected 5 bananas!</p><img src="itemch2.png" alt="Banana eating scene" style="display:block;width:min(280px,75vw);max-height:300px;object-fit:contain;margin:12px auto"><p><strong>BANANA MODE RESUMES IN 3 SECONDS!</strong></p>';
+     overlay.style.display='grid';
+     window.setTimeout(()=>{
+       if(score>=5){score=0;scoreEl.textContent='0';}
+       overlay.style.display='none';burger.src='item2.png';burger.style.display='block';resetBurger();
+       running=true;last=performance.now();raf=requestAnimationFrame(frame);
+     },3000);
+     return;
+   }
    const snack=mode==='burger'?'burger':'banana';
    overlayCard.innerHTML='<h2>😋 YUM YUM!</h2><p>You collected 5 '+(mode==='burger'?'burgers':'bananas')+'!</p><p>Your character is chewing a bite...</p><div id="feastScene"><img id="feastCharacter" src="character.png" alt="Your character"><span id="feastMouth" aria-hidden="true"></span><canvas id="feastBurgerCanvas" width="200" height="180" aria-label="'+snack+' being eaten"></canvas></div><p><strong>BACK TO '+(mode==='burger'?'BURGER':'BANANA')+' HUNT IN 3 SECONDS!</strong></p>';
    overlay.style.display='grid';

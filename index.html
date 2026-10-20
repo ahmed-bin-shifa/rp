@@ -16,7 +16,7 @@ h1{margin:0;font-size:clamp(22px,4vw,36px);text-shadow:0 2px #fff}.hud{backgroun
 #burger{position:absolute;width:64px;height:64px;object-fit:contain;top:-80px;left:30%;z-index:4;filter:drop-shadow(0 5px 3px #0003);user-select:none;pointer-events:none}
 #bonk{position:absolute;display:none;z-index:5;font-weight:1000;font-size:30px;transform:rotate(-12deg);text-shadow:2px 2px white;pointer-events:none}
 .overlay{position:absolute;inset:0;display:grid;place-items:center;background:#14233c8c;color:white;text-align:center;padding:24px;z-index:10}
-.overlay-card{background:#fff;color:#18243b;padding:22px;border-radius:18px;max-width:380px;box-shadow:0 8px 25px #0003}
+.overlay-card{background:#fff;color:#18243b;padding:22px;border-radius:18px;width:min(92vw,800px);max-width:800px;box-shadow:0 8px 25px #0003}
 #feastScene{position:relative;width:280px;height:210px;margin:8px auto 12px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}#feastCharacter{height:190px;max-width:190px;object-fit:contain;object-position:bottom;filter:drop-shadow(0 4px 3px #0002);animation:chewBody .42s ease-in-out infinite alternate}#feastMouth{position:absolute;left:calc(50% + 1px);bottom:119px;width:13px;height:4px;border-radius:50%;background:#321c1c;z-index:2;transform-origin:center;animation:mouthOpen .42s steps(2,end) infinite}#feastBurgerCanvas{position:absolute;width:100px;height:90px;left:calc(50% + 12px);bottom:42px;filter:drop-shadow(0 3px 2px #0003);animation:chomp .45s ease-in-out infinite alternate}
 @keyframes chomp{from{transform:rotate(-12deg) scale(.92)}to{transform:rotate(12deg) scale(1.08)}}
 @keyframes mouthOpen{0%,100%{height:3px;transform:scaleX(.8)}45%,55%{height:15px;transform:scaleX(1.15)}}
@@ -62,7 +62,7 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
  function startEating(){
    running=false;cancelAnimationFrame(raf);burger.style.display='none';bonk.style.display='none';
    if(mode==='banana'){
-     overlayCard.innerHTML='<h2>🍌 YUM YUM!</h2><p>You collected 5 bananas!</p><img src="itemch2.png" alt="Banana eating scene" style="display:block;width:min(280px,75vw);max-height:300px;object-fit:contain;margin:12px auto"><p><strong>BANANA MODE RESUMES IN 3 SECONDS!</strong></p>';
+     overlayCard.innerHTML='<h2>🍌 YUM YUM!</h2><p>You collected 5 bananas!</p><img src="itemch2.png" alt="Banana eating scene" style="display:block;width:auto;height:auto;max-width:min(85vw,700px);max-height:55vh;object-fit:contain;margin:12px auto"><p><strong>BANANA MODE RESUMES IN 3 SECONDS!</strong></p>';
      overlay.style.display='grid';
      window.setTimeout(()=>{
        if(score>=5){score=0;scoreEl.textContent='0';}

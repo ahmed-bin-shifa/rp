@@ -27,21 +27,25 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
 </style>
 </head>
 <body><main class="wrap">
-<div class="top"><h1>🍔 PROJECT 67: BURGER BONK</h1><div class="hud">Burgers: <span id="score">0</span>/5 · Misses: <span id="misses">0</span></div></div>
+<div class="top"><h1>🍔🍌 PROJECT 67: BURGER BONK</h1><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="hud"><span id="itemLabel">Burgers</span>: <span id="score">0</span>/5 · Misses: <span id="misses">0</span></div><button id="changeMode" style="padding:9px 12px;font-size:14px">CHANGE MODE</button></div></div>
 <div class="stage" id="stage" aria-label="Game area">
 <span class="cloud c1">☁️</span><span class="cloud c2">☁️</span><div class="ground"></div>
 <img id="player" src="character.png" alt="Player character">
 <img id="burger" src="Image.png" alt="">
 <div id="bonk">PLOP! 💩</div>
-<div class="overlay" id="overlay"><div class="overlay-card" id="overlayCard"><h2>Watch your head! 🍔</h2><p>Move left and right. Catch 5 burgers and your character will stop to eat one!</p><p><small>Use ← → or A / D. On a phone, use the buttons below.</small></p><button id="start">START GAME</button></div></div>
+<div class="overlay" id="overlay"><div class="overlay-card" id="overlayCard"><h2>🍔🍌 CHOOSE YOUR MODE</h2><p>Pick your snack challenge!</p><button id="burgerMode">🍔 BURGER MODE</button> <button id="bananaMode">🍌 BANANA MODE</button></div></div>
 </div>
 <div class="mobile"><button id="left" aria-label="Move left">⬅ LEFT</button><button id="right" aria-label="Move right">RIGHT ➡</button></div>
-<p class="help">Catch 5 burgers to unlock snack time! 😋</p>
+<p class="help" id="helpText">Choose a mode to start playing!</p>
 </main>
 <script>
 (() => {
  const stage=document.getElementById('stage'), player=document.getElementById('player'), burger=document.getElementById('burger');
  const scoreEl=document.getElementById('score'), missesEl=document.getElementById('misses'), overlay=document.getElementById('overlay'), overlayCard=document.getElementById('overlayCard'), bonk=document.getElementById('bonk');
+ const itemLabel=document.getElementById('itemLabel'), helpText=document.getElementById('helpText');
+ let mode='burger';
+ function showModePicker(){running=false;cancelAnimationFrame(raf);overlayCard.innerHTML='<h2>🍔🍌 CHOOSE YOUR MODE</h2><p>Pick your snack challenge!</p><button id="burgerMode">🍔 BURGER MODE</button> <button id="bananaMode">🍌 BANANA MODE</button>';document.getElementById('burgerMode').addEventListener('click',()=>chooseMode('burger'));document.getElementById('bananaMode').addEventListener('click',()=>chooseMode('banana'));overlay.style.display='grid';burger.style.display='none';helpText.textContent='Choose a mode to start playing!';}
+ function chooseMode(nextMode){mode=nextMode;score=0;scoreEl.textContent='0';itemLabel.textContent=mode==='burger'?'Burgers':'Bananas';helpText.textContent=mode==='burger'?'Catch 5 burgers to unlock snack time! 😋':'Catch 5 bananas to unlock banana snack time! 🍌';burger.src=mode==='burger'?'Image.png':'item2.png';overlayCard.innerHTML=(mode==='burger'?'<h2>Watch your head! 🍔</h2><p>Catch 5 burgers and your character will stop to eat!</p>':'<h2>Banana Bonk! 🍌</h2><p>Catch 5 bananas and your character will stop for a banana snack!</p>')+'<p><small>Use ← → or A / D. On a phone, use the buttons below.</small></p><button id="start">START '+(mode==='burger'?'BURGER':'BANANA')+' MODE</button>';document.getElementById('start').addEventListener('click',start);overlay.style.display='grid';}
  let x=.5, bx=.3, by=-80, speed=190, score=0, misses=0, running=false, last=0, raf=0, lastBonk=0;
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  function placePlayer(){ player.style.left=(x*(stage.clientWidth-player.offsetWidth))+'px'; }
@@ -57,7 +61,8 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
  }
  function startEating(){
    running=false;cancelAnimationFrame(raf);burger.style.display='none';bonk.style.display='none';
-   overlayCard.innerHTML='<h2>😋 YUM YUM!</h2><p>You collected 5 burgers!</p><p>Your character is chewing a bite...</p><div id="feastScene"><img id="feastCharacter" src="character.png" alt="Your character"><span id="feastMouth" aria-hidden="true"></span><canvas id="feastBurgerCanvas" width="200" height="180" aria-label="Burger being eaten"></canvas></div><p><strong>BACK TO BURGER HUNT IN 3 SECONDS!</strong></p>';
+   const snack=mode==='burger'?'burger':'banana';
+   overlayCard.innerHTML='<h2>😋 YUM YUM!</h2><p>You collected 5 '+(mode==='burger'?'burgers':'bananas')+'!</p><p>Your character is chewing a bite...</p><div id="feastScene"><img id="feastCharacter" src="character.png" alt="Your character"><span id="feastMouth" aria-hidden="true"></span><canvas id="feastBurgerCanvas" width="200" height="180" aria-label="'+snack+' being eaten"></canvas></div><p><strong>BACK TO '+(mode==='burger'?'BURGER':'BANANA')+' HUNT IN 3 SECONDS!</strong></p>';
    overlay.style.display='grid';
    const canvas=document.getElementById('feastBurgerCanvas'),ctx=canvas.getContext('2d'),img=new Image();
    img.onload=()=>{
@@ -85,7 +90,7 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
      }
      requestAnimationFrame(bite);
    };
-   img.src='Image.png';
+   img.src=mode==='burger'?'Image.png':'itemch2.png';
    window.setTimeout(()=>{
      if(score>=5){score=0;scoreEl.textContent='0';}
      overlay.style.display='none';burger.style.display='block';resetBurger();
@@ -102,15 +107,17 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
    else if(by>stage.clientHeight){misses++;missesEl.textContent=misses;resetBurger();}
    raf=requestAnimationFrame(frame);
  }
- function start(){cancelAnimationFrame(raf);score=0;misses=0;scoreEl.textContent='0';missesEl.textContent='0';x=.5;placePlayer();burger.style.display='block';overlayCard.innerHTML='<h2>Watch your head! 🍔</h2><p>Move left and right. Catch 5 burgers and your character will stop to eat one!</p><p><small>Use ← → or A / D. On a phone, use the buttons below.</small></p><button id="start">START GAME</button>';document.getElementById('start').addEventListener('click',start);overlay.style.display='none';resetBurger();running=true;last=performance.now();raf=requestAnimationFrame(frame);}
+ function start(){cancelAnimationFrame(raf);score=0;misses=0;scoreEl.textContent='0';missesEl.textContent='0';x=.5;placePlayer();burger.src=mode==='burger'?'Image.png':'item2.png';burger.style.display='block';overlay.style.display='none';resetBurger();running=true;last=performance.now();raf=requestAnimationFrame(frame);}
  function move(d){if(!running)return;x=clamp(x+d,0,1);placePlayer();}
- document.getElementById('start').addEventListener('click',start);
+ document.getElementById('changeMode').addEventListener('click',showModePicker);
+ document.getElementById('burgerMode').addEventListener('click',()=>chooseMode('burger'));
+ document.getElementById('bananaMode').addEventListener('click',()=>chooseMode('banana'));
  window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)){e.preventDefault();move((e.key==='ArrowLeft'||e.key.toLowerCase()==='a')?-.07:.07)}if(e.key===' '&&!running&&overlay.style.display==='none')start()});
  document.getElementById('left').addEventListener('click',()=>move(-.12));document.getElementById('right').addEventListener('click',()=>move(.12));
  let touchX=null;stage.addEventListener('pointerdown',e=>{touchX=e.clientX});stage.addEventListener('pointermove',e=>{if(touchX!==null&&e.buttons&&running){const d=e.clientX-touchX;move(d/stage.clientWidth);touchX=e.clientX}});stage.addEventListener('pointerup',()=>touchX=null);stage.addEventListener('pointercancel',()=>touchX=null);
  window.addEventListener('resize',placePlayer);
  player.addEventListener('error',()=>{player.alt='Upload the supplied classmate photo as character.png';});
- burger.addEventListener('error',()=>{burger.alt='Upload the burger picture as Image.png';});
+ burger.addEventListener('error',()=>{burger.alt=mode==='burger'?'Upload the burger picture as Image.png':'Upload the banana picture as item2.png';});
  placePlayer();
 })();
 </script></body></html>

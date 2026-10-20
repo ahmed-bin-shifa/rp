@@ -27,7 +27,7 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
 </style>
 </head>
 <body><main class="wrap">
-<div class="top"><h1>🍔🍌 PROJECT 67: BURGER BONK</h1><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="hud"><span id="itemLabel">Burgers</span>: <span id="score">0</span>/5 · Misses: <span id="misses">0</span></div><button id="changeMode" style="padding:9px 12px;font-size:14px">CHANGE MODE</button></div></div>
+<div class="top"><h1>🍔🍌 PROJECT 67: BURGER BONK</h1><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="hud">Player: <span id="playerName">Azin</span> · <span id="itemLabel">Burgers</span>: <span id="score">0</span>/5 · Misses: <span id="misses">0</span></div><button id="changeMode" style="padding:9px 12px;font-size:14px">CHANGE MODE</button></div></div>
 <div class="stage" id="stage" aria-label="Game area">
 <span class="cloud c1">☁️</span><span class="cloud c2">☁️</span><div class="ground"></div>
 <img id="player" src="character.png" alt="Player character">
@@ -42,21 +42,21 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
 (() => {
  const stage=document.getElementById('stage'), player=document.getElementById('player'), burger=document.getElementById('burger');
  const scoreEl=document.getElementById('score'), missesEl=document.getElementById('misses'), overlay=document.getElementById('overlay'), overlayCard=document.getElementById('overlayCard'), bonk=document.getElementById('bonk');
- const itemLabel=document.getElementById('itemLabel'), helpText=document.getElementById('helpText');
+ const itemLabel=document.getElementById('itemLabel'), helpText=document.getElementById('helpText'), playerNameEl=document.getElementById('playerName');
  let mode='burger', selectedCharacter='character.png';
  const characters=[{file:'character.png',name:'Azin'},{file:'choc.png',name:'Awab'},{file:'omg.png',name:'Easa'}];
  function renderModePicker(){
    overlayCard.innerHTML='<h2>🎭 CHOOSE YOUR CHARACTER</h2><p>Pick who you want to play as!</p><div class="character-options">'+characters.map(c=>'<button type="button" class="character-choice '+(c.file===selectedCharacter?'selected':'')+'" data-character="'+c.file+'"><img src="'+c.file+'" alt=""><span>'+c.name+(c.file===selectedCharacter?' ✓':'')+'</span></button>').join('')+'</div><h3 style="margin:2px 0">🍔🍌 CHOOSE YOUR MODE</h3><p style="margin:2px 0 8px">Pick your snack challenge!</p><div><button id="burgerMode">🍔 BURGER MODE</button> <button id="bananaMode">🍌 BANANA MODE</button></div>';
-   overlayCard.querySelectorAll('[data-character]').forEach(btn=>btn.addEventListener('click',()=>{selectedCharacter=btn.dataset.character;player.src=selectedCharacter;renderModePicker();}));
+   overlayCard.querySelectorAll('[data-character]').forEach(btn=>btn.addEventListener('click',()=>{selectedCharacter=btn.dataset.character;player.src=selectedCharacter;playerNameEl.textContent=characters.find(c=>c.file===selectedCharacter)?.name||'Player';renderModePicker();}));
    document.getElementById('burgerMode').addEventListener('click',()=>chooseMode('burger'));
    document.getElementById('bananaMode').addEventListener('click',()=>chooseMode('banana'));
  }
  function showModePicker(){running=false;cancelAnimationFrame(raf);renderModePicker();overlay.style.display='grid';burger.style.display='none';helpText.textContent='Choose a character and game mode to start!';}
- function chooseMode(nextMode){mode=nextMode;player.src=selectedCharacter;score=0;scoreEl.textContent='0';itemLabel.textContent=mode==='burger'?'Burgers':'Bananas';helpText.textContent=mode==='burger'?'Catch 5 burgers to unlock snack time! 😋':'Catch 5 bananas to unlock banana snack time! 🍌';burger.src=mode==='burger'?'Image.png':'item2.png';overlayCard.innerHTML=(mode==='burger'?'<h2>Watch your head! 🍔</h2><p>Catch 5 burgers and your character will stop to eat!</p>':'<h2>Banana Bonk! 🍌</h2><p>Catch 5 bananas and your character will stop for a banana snack!</p>')+'<p><small>Use ← → or A / D. On a phone, use the buttons below.</small></p><button id="start">START '+(mode==='burger'?'BURGER':'BANANA')+' MODE</button>';document.getElementById('start').addEventListener('click',start);overlay.style.display='grid';}
- let x=.5, bx=.3, by=-80, speed=190, score=0, misses=0, running=false, last=0, raf=0, lastBonk=0;
+ function chooseMode(nextMode){mode=nextMode;player.src=selectedCharacter;playerNameEl.textContent=characters.find(c=>c.file===selectedCharacter)?.name||'Player';score=0;scoreEl.textContent='0';itemLabel.textContent=mode==='burger'?'Burgers':'Bananas';helpText.textContent=mode==='burger'?'Catch 5 burgers to unlock snack time! 😋':'Catch 5 bananas to unlock banana snack time! 🍌';burger.src=mode==='burger'?'Image.png':'item2.png';overlayCard.innerHTML=(mode==='burger'?'<h2>Watch your head! 🍔</h2><p>Catch 5 burgers and your character will stop to eat!</p>':'<h2>Banana Bonk! 🍌</h2><p>Catch 5 bananas and your character will stop for a banana snack!</p>')+'<p><small>Use ← → or A / D. On a phone, use the buttons below.</small></p><button id="start">START '+(mode==='burger'?'BURGER':'BANANA')+' MODE</button>';document.getElementById('start').addEventListener('click',start);overlay.style.display='grid';}
+ let x=.5, bx=.3, by=-80, speed=330, score=0, misses=0, running=false, last=0, raf=0, lastBonk=0;
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  function placePlayer(){ player.style.left=(x*(stage.clientWidth-player.offsetWidth))+'px'; }
- function resetBurger(){ bx=Math.random()*.88+.06; by=-burger.offsetHeight-Math.random()*100; speed=190+Math.min(score*7,180); burger.style.left=(bx*(stage.clientWidth-burger.offsetWidth))+'px'; burger.style.top=by+'px'; }
+ function resetBurger(){ bx=Math.random()*.88+.06; by=-burger.offsetHeight-Math.random()*35; speed=330+Math.min(score*18,320); burger.style.left=(bx*(stage.clientWidth-burger.offsetWidth))+'px'; burger.style.top=by+'px'; }
  function poopSound(){
    try{
     const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
@@ -125,7 +125,7 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
    else if(by>stage.clientHeight){misses++;missesEl.textContent=misses;resetBurger();}
    raf=requestAnimationFrame(frame);
  }
- function start(){cancelAnimationFrame(raf);score=0;misses=0;scoreEl.textContent='0';missesEl.textContent='0';x=.5;placePlayer();burger.src=mode==='burger'?'Image.png':'item2.png';burger.style.display='block';overlay.style.display='none';resetBurger();running=true;last=performance.now();raf=requestAnimationFrame(frame);}
+ function start(){cancelAnimationFrame(raf);playerNameEl.textContent=characters.find(c=>c.file===selectedCharacter)?.name||'Player';score=0;misses=0;scoreEl.textContent='0';missesEl.textContent='0';x=.5;placePlayer();burger.src=mode==='burger'?'Image.png':'item2.png';burger.style.display='block';overlay.style.display='none';resetBurger();running=true;last=performance.now();raf=requestAnimationFrame(frame);}
  function move(d){if(!running)return;x=clamp(x+d,0,1);placePlayer();}
  document.getElementById('changeMode').addEventListener('click',showModePicker);
  renderModePicker();

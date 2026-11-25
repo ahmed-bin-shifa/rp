@@ -31,7 +31,7 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
 <div class="top"><h1>🍔 BURGER BONK</h1><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="hud">Player: <span id="playerName">Chugtai lab 0/0</span> · <span id="itemLabel">Burgers</span>: <span id="score">0</span>/5 · Misses: <span id="misses">0</span></div><button id="changeMode" style="padding:9px 12px;font-size:14px">CHANGE MODE</button></div></div>
 <div class="stage" id="stage" aria-label="Game area">
 <span class="cloud c1">☁️</span><span class="cloud c2">☁️</span><div class="ground"></div>
-<img id="player" src="character.png" alt="Player character">
+<img id="player" src="character.jpg" alt="Player character">
 <img id="burger" src="Image.png" alt="">
 <img id="properTarget" src="" alt="Selected target" style="display:none">
 <div id="bonk">PLOP! 💩</div>
@@ -45,8 +45,8 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
  const stage=document.getElementById('stage'), player=document.getElementById('player'), burger=document.getElementById('burger');
  const scoreEl=document.getElementById('score'), missesEl=document.getElementById('misses'), overlay=document.getElementById('overlay'), overlayCard=document.getElementById('overlayCard'), bonk=document.getElementById('bonk');
  const itemLabel=document.getElementById('itemLabel'), helpText=document.getElementById('helpText'), playerNameEl=document.getElementById('playerName');
- let mode='burger', selectedCharacter='character.png';
- const characters=[{file:'character.png',name:'Chugtai lab 0/0'},{file:'choc.png',name:'Yoshie sala'}];
+ let mode='burger', selectedCharacter='character.jpg';
+ const characters=[{file:'character.jpg',name:'Chugtai lab 0/0'},{file:'choc.jpg',name:'Yoshie sala'}];
  function renderModePicker(){
    overlayCard.innerHTML='<h2>🎭 CHOOSE YOUR CHARACTER</h2><p>Pick who you want to play as!</p><div class="character-options">'+characters.map(c=>'<button type="button" class="character-choice '+(c.file===selectedCharacter?'selected':'')+'" data-character="'+c.file+'"><img src="'+c.file+'" alt=""><span>'+c.name+(c.file===selectedCharacter?' ✓':'')+'</span></button>').join('')+'</div><h3 style="margin:2px 0">CHOOSE YOUR MODE</h3><p style="margin:2px 0 8px">Choose a game mode!</p><div><button id="burgerMode">🍔 BURGER MODE</button> <button id="mmMode">⚡ THE MM</button></div>';
    overlayCard.querySelectorAll('[data-character]').forEach(btn=>btn.addEventListener('click',()=>{selectedCharacter=btn.dataset.character;player.src=selectedCharacter;playerNameEl.textContent=characters.find(c=>c.file===selectedCharacter)?.name||'Player';renderModePicker();}));
@@ -105,7 +105,7 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
  document.getElementById('left').addEventListener('click',()=>move(-.12));document.getElementById('right').addEventListener('click',()=>move(.12));
  let touchX=null;stage.addEventListener('pointerdown',e=>{touchX=e.clientX});stage.addEventListener('pointermove',e=>{if(touchX!==null&&e.buttons&&running){const d=e.clientX-touchX;move(d/stage.clientWidth);touchX=e.clientX}});stage.addEventListener('pointerup',()=>touchX=null);stage.addEventListener('pointercancel',()=>touchX=null);
  window.addEventListener('resize',placePlayer);
- player.addEventListener('error',()=>{player.alt='Upload the supplied classmate photo as character.png';});
+ player.addEventListener('error',()=>{player.alt='Upload the supplied classmate photo as character.jpg';});
  burger.addEventListener('error',()=>{burger.alt=mode==='burger'?'Upload the burger picture as Image.png':'Upload the burger picture as Image.png';});
  placePlayer();
 })();

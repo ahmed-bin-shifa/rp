@@ -46,7 +46,7 @@ button{border:0;border-radius:12px;background:#ffbd35;color:#312100;padding:12px
  const scoreEl=document.getElementById('score'), missesEl=document.getElementById('misses'), overlay=document.getElementById('overlay'), overlayCard=document.getElementById('overlayCard'), bonk=document.getElementById('bonk');
  const itemLabel=document.getElementById('itemLabel'), helpText=document.getElementById('helpText'), playerNameEl=document.getElementById('playerName');
  let mode='burger', selectedCharacter='character.jpg';
- const characters=[{file:'character.jpg',name:'Chugtai lab 0/0'},{file:'choc.jpg',name:'Yoshie sala'}];
+ const characters=[{file:'character.jpg',name:'Chugtai lab 0/0'},{file:'yoshie-sala.jpg',name:'Yoshie sala'}];
  function renderModePicker(){
    overlayCard.innerHTML='<h2>🎭 CHOOSE YOUR CHARACTER</h2><p>Pick who you want to play as!</p><div class="character-options">'+characters.map(c=>'<button type="button" class="character-choice '+(c.file===selectedCharacter?'selected':'')+'" data-character="'+c.file+'"><img src="'+c.file+'" alt=""><span>'+c.name+(c.file===selectedCharacter?' ✓':'')+'</span></button>').join('')+'</div><h3 style="margin:2px 0">CHOOSE YOUR MODE</h3><p style="margin:2px 0 8px">Choose a game mode!</p><div><button id="burgerMode">🍔 BURGER MODE</button> <button id="mmMode">⚡ THE MM</button></div>';
    overlayCard.querySelectorAll('[data-character]').forEach(btn=>btn.addEventListener('click',()=>{selectedCharacter=btn.dataset.character;player.src=selectedCharacter;playerNameEl.textContent=characters.find(c=>c.file===selectedCharacter)?.name||'Player';renderModePicker();}));
